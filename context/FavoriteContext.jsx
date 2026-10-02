@@ -6,12 +6,28 @@ const FavoriteContext = createContext(undefined);
 
 export function FavoriteProvider({ children }) {
   const [favorites, setFavorites] = useState([]);
+  const value = { 
+    favorites,
+    addFavorite, 
+    removeFavorite, 
+    isFavorite,
+    updateNote,
+    toggleFavorite,
+  };
 
   useEffect(() => {
     fetch("/api/favorites")
       .then((res) => res.json())
       .then(setFavorites);
   }, []);
+
+  async function toggleFavorite(user) {
+    if (isFavorite(user.id)) {
+      await removeFavorite(user.id);
+    } else {
+      await addFavorite(user);
+    }
+  }
 
   async function addFavorite(user) {
     const res = await fetch("/api/favorites", {
@@ -34,25 +50,24 @@ export function FavoriteProvider({ children }) {
     }
   }
 
+  async function updateNote(id, note) {
+    const res = await fetch(`/api/favorites/${Id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({note}),
+    });
+
+    if (!res.ok) {
+      throw new Error("Gagal membuat catatan.");
+    }
+
+    const { data } = await res.json();
+    setFavorites((prev) =>prev.map((f) => (f.id === id ? data : f)));
+  }
+
   function isFavorite(userId) {
     return favorites.some((f) => f.id === userId);
   }
-
-  async function toggleFavorite(user) {
-    if (isFavorite(user.id)) {
-      await removeFavorite(user.id);
-    } else {
-      await addFavorite(user);
-    }
-  }
-
-  const value = { 
-    favorites,
-    addFavorite, 
-    removeFavorite, 
-    isFavorite,
-    toggleFavorite
-  };
 
   return (
     <FavoriteContext.Provider value={value}>

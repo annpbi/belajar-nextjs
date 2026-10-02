@@ -1,13 +1,13 @@
-import { favorites } from "@/lib/db";
+import { removeFavorite } from "@/lib/services/favoriteService";
 
 export async function DELETE(request, { params }) {
   const { id } = await params;
-  const index = favorites.findIndex((f) => String(f.id) === id);
+  const numId = Number(id);
+  const result = removeFavorite(numId);
 
-  if (index === -1) {
-    return Response.json({ error: "Data tidak ditemukan" }, { status: 404 });
+  if (!result.success) {
+    return Response.json({ error: result.error }, { status: result.status });
   }
 
-  favorites.splice(index, 1);
   return Response.json({ message: "Berhasil dihapus" });
 }
