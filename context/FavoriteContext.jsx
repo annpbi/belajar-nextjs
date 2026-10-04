@@ -51,7 +51,7 @@ export function FavoriteProvider({ children }) {
   }
 
   async function updateNote(id, note) {
-    const res = await fetch(`/api/favorites/${Id}`, {
+    const res = await fetch(`/api/favorites/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({note}),

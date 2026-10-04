@@ -92,7 +92,7 @@ export default function Contact() {
               {submitted ? (
                 <div className="flex h-full min-h-64 flex-col items-center justify-center text-center">
                   <p className="text-lg font-semibold">
-                    Pesan terkiirm
+                    Pesan terkirim
                   </p>
 
                   <p className="mt-2 text-sm text-muted-foreground">

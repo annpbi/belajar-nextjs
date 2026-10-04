@@ -25,7 +25,7 @@ export default function FavoritesPage() {
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {favorites.length > 0 ? (
-            favorites.map((user) => <UserCard key={user.id} user={user} />)
+            favorites.map((user) => <UserCard key={user.id} user={user} readOnlyNote/>)
           ) : (
             <div className="col-span-full flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
               <Star className="size-8" />

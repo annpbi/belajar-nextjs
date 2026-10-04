@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { useFavorite } from "@/context/FavoriteContext";
 
-export default function UserCard({ user }) {
+export default function UserCard({ user, readOnlyNote = false }) {
   const initials = user.name
     .split(" ")
     .map((part) => part[0])
@@ -20,22 +20,47 @@ export default function UserCard({ user }) {
     .join("")
     .toUpperCase();
 
-  const { isFavorite, toggleFavorite, updateNote } = useFavorite();
+  const { favorites, isFavorite, toggleFavorite, updateNote } = useFavorite();
   const favorited = isFavorite(user.id);
 
-  const [note, setNote] = useState(user.note || "");
+  // note diambil dari context (sumber kebenaran), bukan dari state lokal
+  const savedNote = favorites.find((f) => f.id === user.id)?.note ?? "";
+
+  const [draft, setDraft] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  async function handleToggle() {
+    try {
+      await toggleFavorite(user);
+      // reset supaya kalau difavoritkan lagi, kolom note kosong
+      setDraft("");
+      setIsEditing(false);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
 
   async function handleSaveNote() {
     setSaving(true);
     try {
-      await updateNote(user.id, note);
+      await updateNote(user.id, draft.trim());
+      setIsEditing(false);
     } catch (err) {
-      alert("Gagal menyimpan catatan");
+      alert(err.message);
     } finally {
       setSaving(false);
     }
   }
+
+  function handleEdit() {
+    setDraft(savedNote);
+    setIsEditing(true);
+  }
+
+  const showForm =
+    favorited && !readOnlyNote && (!savedNote || isEditing);
+  const showSavedNote = favorited && savedNote && !isEditing;
 
   return (
     <Card className="group border border-white/10 bg-foreground/[0.03] transition-all hover:-translate-y-1 hover:border-foreground/20 hover:shadow-xl hover:shadow-black/20">
@@ -52,7 +77,7 @@ export default function UserCard({ user }) {
         <p className="text-sm text-muted-foreground">{user.email}</p>
 
         <p className="mt-1 text-sm text-muted-foreground">
-          {user.company.name}
+          {user.company?.name}
         </p>
 
         <div className="mt-4 flex gap-2">
@@ -60,7 +85,7 @@ export default function UserCard({ user }) {
 
           <Button
             variant={favorited ? "default" : "secondary"}
-            onClick={() => toggleFavorite(user)}
+            onClick={handleToggle}
             className="rounded-full gap-1.5"
           >
             <Heart className={`size-4 ${favorited ? "fill-current" : ""}`} />
@@ -68,11 +93,11 @@ export default function UserCard({ user }) {
           </Button>
         </div>
 
-        {favorited && (
+        {showForm && (
           <div className="mt-4 space-y-2">
             <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
               placeholder="Kenapa kamu favoritkan orang ini?"
               className="w-full rounded-md border border-white/10 bg-transparent p-2 text-sm text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               rows={2}
@@ -82,14 +107,30 @@ export default function UserCard({ user }) {
               variant="outline"
               className="rounded-full"
               onClick={handleSaveNote}
-              disabled={saving}
+              disabled={saving || !draft.trim()}
             >
-              {saving ? "Menyimpan..." : "Simpan Catatan"}
+              {saving ? "Menyimpan..." : "Simpan"}
             </Button>
+          </div>
+        )}
+
+        {showSavedNote && (
+          <div className="mt-4 flex items-start justify-between gap-2">
+            <p className="text-sm text-muted-foreground">{savedNote}</p>
+
+            {!readOnlyNote && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full"
+                onClick={handleEdit}
+              >
+                Edit
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
     </Card>
-    
   );
 }
