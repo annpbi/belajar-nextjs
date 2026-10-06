@@ -30,7 +30,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   const { id } = await params;
   const numId = Number(id);
-  const result = removeFavorite(numId);
+  const result = await removeFavorite(numId);
 
   if (!result.success) {
     return Response.json({ error: result.error }, { status: result.status });
