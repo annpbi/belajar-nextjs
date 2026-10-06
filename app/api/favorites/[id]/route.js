@@ -1,4 +1,4 @@
-import { removeFavorite, updateFavorite } from "@/lib/services/favoriteService";
+import { removeFavorite } from "@/lib/services/favoriteService";
 
 export async function PATCH(request, { params }) {
   const { id } = await params;
