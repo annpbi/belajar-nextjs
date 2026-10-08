@@ -1,39 +1,35 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 const FavoriteContext = createContext(undefined);
 
 export function FavoriteProvider({ children }) {
+  const { isLoggedIn } = useAuth();
   const [favorites, setFavorites] = useState([]);
-  const value = { 
-    favorites,
-    addFavorite, 
-    removeFavorite, 
-    isFavorite,
-    updateNote,
-    toggleFavorite,
-  };
 
   useEffect(() => {
-    fetch("/api/favorites")
-      .then((res) => res.json())
-      .then(setFavorites);
-  }, []);
-
-  async function toggleFavorite(user) {
-    if (isFavorite(user.id)) {
-      await removeFavorite(user.id);
-    } else {
-      await addFavorite(user);
+    if (!isLoggedIn) {
+      setFavorites([]);
+      return;
     }
-  }
+
+    fetch("/api/favorites")
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setFavorites);
+  }, [isLoggedIn]);
 
   async function addFavorite(user) {
+    if (!isLoggedIn) {
+      alert("Silakan login terlebih dahulu untuk menambahkan favorite.");
+      return;
+    }
+
     const res = await fetch("/api/favorites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
+      body: JSON.stringify({ user_id: user.id }),
     });
 
     if (res.ok) {
@@ -46,28 +42,15 @@ export function FavoriteProvider({ children }) {
     const res = await fetch(`/api/favorites/${userId}`, { method: "DELETE" });
 
     if (res.ok) {
-      setFavorites((prev) => prev.filter((f) => f.id !== userId));
+      setFavorites((prev) => prev.filter((f) => f.user_id !== userId));
     }
-  }
-
-  async function updateNote(id, note) {
-    const res = await fetch(`/api/favorites/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({note}),
-    });
-
-    if (!res.ok) {
-      throw new Error("Gagal membuat catatan.");
-    }
-
-    const { data } = await res.json();
-    setFavorites((prev) =>prev.map((f) => (f.id === id ? data : f)));
   }
 
   function isFavorite(userId) {
-    return favorites.some((f) => f.id === userId);
+    return favorites.some((f) => f.user_id === userId);
   }
+
+  const value = { favorites, addFavorite, removeFavorite, isFavorite };
 
   return (
     <FavoriteContext.Provider value={value}>

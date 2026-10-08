@@ -1,15 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { messages } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
 export async function deleteMessageAction(formData) {
-  const id = Number(formData.get("id"));
+  const id = formData.get("id");
 
-  const index = messages.findIndex((msg) => msg.id === id);
-  if (index === -1) return;
+  const { error, count } = await supabase
+    .from("messages")
+    .delete({ count: "exact" })
+    .eq("id", id);
 
-  messages.splice(index, 1);
+  if (error) throw new Error(error.message);
+  if (count === 0) {
+    throw new Error("Tidak ada data yang terhapus (cek RLS/policy)");
+  }
 
   revalidatePath("/messages");
 }
