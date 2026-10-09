@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
-import UserCard from "@/components/UserCard";
+import UserCard from "@/components/userCard";
 import { useFavorite } from "@/context/FavoriteContext";
 
 export default function FavoritesPage() {
@@ -17,10 +17,10 @@ export default function FavoritesPage() {
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-primary">Favorite</p>
           <h1 className="mt-2 text-4xl font-bold tracking-tight md:text-5xl">
-            My Favorite Users
+            Pengguna Favorit Paras
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Data ini diambil langsung dari FavoriteContext.
+            Daftar pengguna PARAS yang difavoritkan.
           </p>
         </div>
 
@@ -41,12 +41,12 @@ export default function FavoritesPage() {
         ) : (
           <div className="mt-16 flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
             <Heart className="size-8" />
-            <p>Belum ada user favorit. Tandai dulu dari User Directory.</p>
+            <p>Belum ada user favorit. Tentukan pengguna favorit di Pengguna PARAS.</p>
             <Link
               href="/users"
               className="text-sm font-medium text-primary hover:underline"
             >
-              Buka User Directory →
+              Pengguna PARAS →
             </Link>
           </div>
         )}

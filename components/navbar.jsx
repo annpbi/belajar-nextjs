@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser } from "@/context/UserContext";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-
+import { useAuth } from "@/context/AuthContext"; // ← baru
 import { useFavorite } from "@/context/FavoriteContext";
 
 const links = [
@@ -19,18 +18,27 @@ const links = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { name, submitted } = useUser();
+  const { user, isLoggedIn } = useAuth(); // ← baru
   const { favorites } = useFavorite();
+
+  // Menu Favorite baru muncul setelah ada user yang difavoritkan
+  const navLinks =
+    favorites.length > 0
+      ? [...links, { href: "/favorites", label: `Favorite (${favorites.length})` }]
+      : links;
 
   return (
     <header className="sticky top-4 z-50 mx-auto w-full max-w-4xl px-4">
       <nav className="flex items-center justify-between gap-4 rounded-full border border-white/10 bg-background/70 px-4 py-2 shadow-lg shadow-black/20 backdrop-blur-xl">
-        <Link href="/" className="shrink-0 text-sm font-bold tracking-tight">
+        <Link
+          href="/"
+          className="shrink-0 text-sm font-bold tracking-tight"
+        >
           PARAS
         </Link>
 
         <div className="hidden items-center gap-1 text-sm text-muted-foreground sm:flex">
-          {links.map((link) => {
+          {navLinks.map((link) => {
             const isActive =
               link.href === "/"
                 ? pathname === "/"
@@ -49,28 +57,35 @@ export default function Navbar() {
               </Link>
             );
           })}
-
-          {/* Link ke halaman favorites, label pakai counter */}
-          <Link
-            href="/favorites"
-            className={cn(
-              "rounded-full px-3 py-1.5 transition-colors hover:text-foreground",
-              pathname?.startsWith("/favorites") &&
-                "bg-foreground/10 text-foreground"
-            )}
-          >
-            Favorite ({favorites.length})
-          </Link>
         </div>
 
-        {submitted && <span>Hi, {name} 👋</span>}
+        {/* ← tombol "Get in touch" diganti dengan Login / Logout */}
+        {isLoggedIn ? (
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-muted-foreground sm:inline">
+              Hi, <span className="font-medium text-foreground">{user.name ?? user.email}</span>
+            </span>
 
-        <Link
-          href="/contact"
-          className={cn(buttonVariants({ size: "sm" }), "rounded-full")}
-        >
-          Get in touch
-        </Link>
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                className={cn(
+                  buttonVariants({ size: "sm", variant: "outline" }),
+                  "rounded-full"
+                )}
+              >
+                Logout
+              </button>
+            </form>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ size: "sm" }), "rounded-full")}
+          >
+            Login
+          </Link>
+        )}
       </nav>
     </header>
   );

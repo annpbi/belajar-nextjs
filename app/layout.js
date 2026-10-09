@@ -4,8 +4,9 @@ import localFont from "next/font/local";
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import {UserProvider} from "@/context/UserContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { FavoriteProvider } from "@/context/FavoriteContext";
+import { createClient } from "@/lib/supabase/server";
 
 const fontSans = localFont({
   src: [
@@ -23,28 +24,34 @@ const fontSans = localFont({
 });
 
 export const metadata = {
-  title: "MyWebsite — Build something meaningful",
+  title: "PARAS — Build something meaningful",
   description:
-    "We help individuals and businesses build modern, simple, and useful digital experiences.",
+    "Kami membantu masyarakat memahami informasi iklim dan kebencanaan, serta mendorong aksi nyata untuk lingkungan yang lebih tangguh.",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html
       lang="en"
       className={`${fontSans.variable}`}
     >
       <body className="flex min-h-screen flex-col bg-background text-foreground antialiased">
-        <UserProvider>
+        <AuthProvider user={user ? { id: user.id, email: user.email, name: user.user_metadata?.name ?? null } : null}>
           <FavoriteProvider>
-           <Navbar />
+            <Navbar />
+
             <main className="flex-1">
               {children}
             </main>
 
             <Footer />
           </FavoriteProvider>
-        </UserProvider>
+        </AuthProvider>
       </body>
     </html>
   );

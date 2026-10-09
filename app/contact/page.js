@@ -1,8 +1,7 @@
 "use client";
 
+import { useState } from "react";
 import { Mail, MapPin, MessageCircle } from "lucide-react";
-
-import { useUser } from "@/context/UserContext";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,27 +15,21 @@ const contactInfo = [
 ];
 
 export default function Contact() {
-  const {
-    name,
-    email,
-    message,
-    submitted,
-    setName,
-    setEmail,
-    setMessage,
-    setSubmitted,
-  } = useUser();
+  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
-  
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("email", email);
     formData.append("message", message);
-  
+
     const result = await submitContactForm(formData);
-  
+
     if (result.success) {
       setSubmitted(true);
     } else {
